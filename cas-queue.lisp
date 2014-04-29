@@ -95,6 +95,7 @@ interval starts at +CAS-SLEEP+ and exponentially increases up to
 
 
 (defun queue-count (q)
+  "Return the approximate number of items in the queue."
   (max 0 (- (#+sbcl aref
              #-sbcl svref (queue-enqueued-count q) 0)
             (#+sbcl aref
@@ -102,8 +103,7 @@ interval starts at +CAS-SLEEP+ and exponentially increases up to
 
 
 (defun queue-push (queue item)
-  "Add ITEM to the head of the queue QUEUE, returning as values ITEM
-and QUEUE."
+  "Add ITEM to the tail of QUEUE, returning as values ITEM and QUEUE."
   (symbol-macrolet
       ((head (queue-head queue))
        (tail (queue-tail queue)))
@@ -144,6 +144,7 @@ and QUEUE."
 
 
 (defun queue-empty-p (queue)
+  "Return non-nil when QUEUE is \(probably\) empty."
   (with-cas-retry
     (let ((head (queue-head queue)))
       (or (null head)
@@ -155,6 +156,8 @@ and QUEUE."
 
 
 (defun queue-peek (queue)
+  "Return a value \(if any\) which was recently stored in the head of
+QUEUE."
   (with-cas-retry
     (let ((head (queue-head queue)))
       (when head
@@ -165,6 +168,7 @@ and QUEUE."
 
 
 (defun queue-dequeue (queue)
+  "Dequeue the next item from the head of QUEUE."
   (symbol-macrolet
       ((head (queue-head queue)))
     (with-cas-retry
@@ -190,7 +194,7 @@ and QUEUE."
             ;; another thread may update the head slot.
 
             ;; mark old head cell as an empty cell:
-            #-deploy (assert (not (eq +empty+ (queue-cell-value cur))))
+            #+with-assertions (assert (not (eq +empty+ (queue-cell-value cur))))
             (setf (queue-cell-value cur) +empty+)
 
             (queue-atomic-incf queue queue-dequeued-count)
@@ -199,10 +203,10 @@ and QUEUE."
 
 
 (defun queue-pop (queue &key wait-p)
-  "Pop the next item from the queue QUEUE, returning as values the
-item which was popped and whether the queue was empty.  If WAIT-P is a
-number, busy-wait up to that many seconds to pop an item.  If WAIT-P
-is otherwise non-nil, busy-wait forever."
+  "Pop the next item from QUEUE, returning as values the item which
+was popped and whether the queue was empty.  If WAIT-P is a number,
+busy-wait up to that many seconds to pop an item.  If WAIT-P is
+otherwise non-nil, busy-wait forever."
   (cond
    (wait-p
     (let ((end-time (when (numberp wait-p)
@@ -213,7 +217,7 @@ is otherwise non-nil, busy-wait forever."
           (multiple-value-bind (item empty-p)
               (queue-dequeue queue)
             (unless empty-p
-              #-deploy (assert (not (eq +empty+ item)))
+              #+with-assertions (assert (not (eq +empty+ item)))
               (return (values item empty-p))))
           (when (and end-time
                      (>= (get-internal-real-time) end-time))
