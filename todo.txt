@@ -1,0 +1,12 @@
+- benchmark whether the CAS queue implementation is actually more
+performant than a simple locked queue.
+
+- SBCL and LispWorks already include lock-free queue implementations.
+Perhaps use them instead?
+
+- rewrite tests using bordeaux-threads or publish LW MP shim
+
+- add better tests & add tests for count slot(s)
+
+- get rid of dequeued/enqueued-count slots and just use a single count
+slot?
