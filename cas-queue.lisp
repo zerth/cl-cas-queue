@@ -4,7 +4,7 @@
   (:nicknames :cas-queue)
   (:use :common-lisp))
 
-(in-package :cas-queue)
+(in-package :net.mwatters.cas-queue)
 
 
 (defconstant +cas-sleep+ (/ 1 internal-time-units-per-second)
