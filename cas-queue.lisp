@@ -2,7 +2,13 @@
 
 (defpackage :net.mwatters.cas-queue
   (:nicknames :cas-queue)
-  (:use :common-lisp))
+  (:use :common-lisp)
+  (:export
+   :make-queue
+   :queue-push
+   :queue-pop
+   :queue-empty-p
+   :queue-peek))
 
 (in-package :net.mwatters.cas-queue)
 

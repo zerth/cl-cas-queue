@@ -12,6 +12,6 @@ Usage:
 (defun push-item (x)
   (cas-queue:queue-push *q* x))
 
-(defun pop-item (x)
+(defun pop-item ()
   (cas-queue:queue-pop *q* :wait-p t))
 ```
